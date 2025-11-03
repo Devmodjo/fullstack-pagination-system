@@ -20,6 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/person")
 @RequiredArgsConstructor
+@CrossOrigin(originPatterns = "*")
 @Tag(name = "Person API", description = "API pour la gestion des personnes")
 public class PersonController {
 

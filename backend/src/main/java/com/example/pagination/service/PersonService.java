@@ -23,10 +23,10 @@ public class PersonService {
      * @return person information
      */
     public PersonDto createPerson(PersonDto personDto) {
-        personRepository.save(
+        Person savedPerson = personRepository.save(
                 new Person(null, personDto.pseudo(), personDto.profession())
         );
-        return new PersonDto(personDto.pseudo(), personDto.profession());
+        return new PersonDto(savedPerson.getPseudo(), savedPerson.getProfession());
     }
 
     /**

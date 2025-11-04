@@ -1,35 +1,80 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useEffect, useState } from "react";
+import { getPersons, addPerson } from "./api";
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+interface Person {
+  pseudo: string;
+  profession: string;
 }
 
-export default App
+export default function App() {
+  const [persons, setPersons] = useState<Person[]>([]);
+  const [page, setPage] = useState(0);
+  const [pseudo, setPseudo] = useState("");
+  const [profession, setProfession] = useState("");
+
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil(persons.length / itemsPerPage);
+
+  useEffect(() => {
+    getPersons().then((data) => {
+      setPersons(data);
+    });
+  }, []);
+
+  const handleAdd = async () => {
+    if (!pseudo || !profession) return;
+    await addPerson(pseudo, profession);
+    setPseudo("");
+    setProfession("");
+    const data = await getPersons();
+    setPersons(data);
+  };
+
+  // Découpe les données localement selon la page
+  const start = page * itemsPerPage;
+  const end = start + itemsPerPage;
+  const currentPersons = persons.slice(start, end);
+
+  return (
+    <div style={{ padding: 20 }}>
+      <h1>Pagination Front-End (React + Spring Boot)</h1>
+
+      <div>
+        <input
+          placeholder="Pseudo"
+          value={pseudo}
+          onChange={(e) => setPseudo(e.target.value)}
+        />
+        <input
+          placeholder="Profession"
+          value={profession}
+          onChange={(e) => setProfession(e.target.value)}
+        />
+        <button onClick={handleAdd}>Ajouter</button>
+      </div>
+
+      <ul>
+        {currentPersons.map((p, key) => (
+          <li key={key}>
+            {p.pseudo} — {p.profession}
+          </li>
+        ))}
+      </ul>
+
+      <div>
+        <button disabled={page === 0} onClick={() => setPage(page - 1)}>
+          Précédent
+        </button>
+        <span>
+          Page {page + 1}/{totalPages || 1}
+        </span>
+        <button
+          disabled={page + 1 >= totalPages}
+          onClick={() => setPage(page + 1)}
+        >
+          Suivant
+        </button>
+      </div>
+    </div>
+  );
+}
